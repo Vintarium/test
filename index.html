@@ -52,39 +52,6 @@
         .delete-btn:hover {
             background-color: #dc2626;
         }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0,0.4);
-            backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background-color: #fff;
-            margin: 15% auto;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            width: 80%;
-            max-width: 400px;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        .close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close-btn:hover,
-        .close-btn:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
         .file-link {
             color: #4f46e5;
             text-decoration: underline;
@@ -151,6 +118,14 @@
         .day.has-activity.selected {
             background-color: #3f35c5;
         }
+        .message-box {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -168,6 +143,7 @@
         </div>
         <button id="authBtn" class="w-full mt-4 flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Войти</button>
         <p class="text-sm mt-4"><a href="#" id="forgotPasswordLink" class="text-indigo-600 hover:underline">Забыли логин или пароль?</a></p>
+        <div id="authMessage" class="hidden mt-4 text-sm font-medium text-center p-2 rounded-md"></div>
     </div>
     
     <!-- Password Reset Section -->
@@ -212,7 +188,12 @@
 
         <!-- Activity Form Section -->
         <div id="activityFormSection" class="mt-8 hidden">
-            <h2 class="text-2xl font-bold mb-4 text-center" id="formTitle">Добавить запись</h2>
+            <div class="flex flex-row-reverse justify-between items-center">
+                <button id="returnToCalendarBtn" class="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    Вернуться к календарю
+                </button>
+                <h2 class="text-2xl font-bold mb-4 text-center" id="formTitle">Добавить запись</h2>
+            </div>
             <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
                 <input type="hidden" id="selectedDateInput">
                 <input type="hidden" id="editingDocId">
@@ -240,20 +221,13 @@
                     <button id="addActivityBtn" class="flex-1 justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Добавить запись</button>
                     <button id="cancelFormBtn" class="flex-1 justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">Отмена</button>
                 </div>
+                <div id="formMessage" class="hidden mt-4 text-sm font-medium text-center p-2 rounded-md"></div>
             </div>
             
             <!-- Отображение списка занятий для выбранного дня -->
             <div id="activitiesList" class="space-y-4">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">Записи за <span id="selectedDateDisplay"></span></h2>
             </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно для сообщений -->
-    <div id="messageModal" class="modal">
-        <div class="modal-content text-center">
-            <span class="close-btn" onclick="document.getElementById('messageModal').style.display='none'">&times;</span>
-            <p id="modalMessage" class="text-gray-700"></p>
         </div>
     </div>
 
@@ -289,6 +263,7 @@
         const authBtn = document.getElementById('authBtn');
         const forgotPasswordLink = document.getElementById('forgotPasswordLink');
         const backToLoginLink = document.getElementById('backToLoginLink');
+        const authMessage = document.getElementById('authMessage');
 
         // Main App UI Elements
         const mainAppSection = document.getElementById('mainAppSection');
@@ -303,6 +278,9 @@
         const selectedDateDisplay = document.getElementById('selectedDateDisplay');
         const formTitle = document.getElementById('formTitle');
         const editingDocIdInput = document.getElementById('editingDocId');
+        const returnToCalendarBtn = document.getElementById('returnToCalendarBtn');
+        const formMessage = document.getElementById('formMessage');
+
 
         const activityTimeInput = document.getElementById('activityTime');
         const activityDisciplineInput = document.getElementById('activityDiscipline');
@@ -312,17 +290,39 @@
         const addActivityBtn = document.getElementById('addActivityBtn');
         const cancelFormBtn = document.getElementById('cancelFormBtn');
         const activitiesList = document.getElementById('activitiesList');
-        const messageModal = document.getElementById('messageModal');
-        const modalMessage = document.getElementById('modalMessage');
+
 
         // Calendar state
         let currentDate = new Date();
         let allActivities = [];
         let selectedDayElement = null;
+        
+        const showAuthMessage = (message, isError = true) => {
+            authMessage.textContent = message;
+            authMessage.classList.remove('hidden');
+            authMessage.classList.remove(isError ? 'bg-green-100' : 'bg-red-100');
+            authMessage.classList.remove(isError ? 'text-green-700' : 'text-red-700');
+            authMessage.classList.add(isError ? 'bg-red-100' : 'bg-green-100');
+            authMessage.classList.add(isError ? 'text-red-700' : 'text-green-700');
+        };
 
-        const showModal = (message) => {
-            modalMessage.textContent = message;
-            messageModal.style.display = 'block';
+        const clearAuthMessage = () => {
+            authMessage.textContent = '';
+            authMessage.classList.add('hidden');
+        };
+
+        const showFormMessage = (message, isError = true) => {
+            formMessage.textContent = message;
+            formMessage.classList.remove('hidden');
+            formMessage.classList.remove(isError ? 'bg-green-100' : 'bg-red-100');
+            formMessage.classList.remove(isError ? 'text-green-700' : 'text-red-700');
+            formMessage.classList.add(isError ? 'bg-red-100' : 'bg-green-100');
+            formMessage.classList.add(isError ? 'text-red-700' : 'text-green-700');
+        };
+
+        const clearFormMessage = () => {
+            formMessage.textContent = '';
+            formMessage.classList.add('hidden');
         };
         
         const clearForm = () => {
@@ -334,6 +334,7 @@
             editingDocIdInput.value = '';
             addActivityBtn.textContent = 'Добавить запись';
             formTitle.textContent = 'Добавить запись';
+            clearFormMessage();
         };
 
         const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
@@ -405,12 +406,18 @@
                     const time = activity.time || 'Нет времени';
                     const subject = activity.subject ? `<p class="text-sm text-gray-600 mt-1">Тема: ${activity.subject}</p>` : '';
                     const notes = activity.notes ? `<p class="text-sm text-gray-600 mt-1">Заметка: ${activity.notes}</p>` : '';
-                    const documentContent = activity.documentContent ? 
-                        `<div class="mt-2 p-2 border border-gray-300 rounded-md bg-gray-100 text-sm">
-                            <h4 class="font-bold mb-1">Файл: ${activity.documentName}</h4>
-                            <pre class="whitespace-pre-wrap">${activity.documentContent}</pre>
-                        </div>` :
-                        `<span class="text-xs text-gray-500 mt-1">Нет документа</span>`;
+                    
+                    let documentSection = '';
+                    if (activity.documentContent) {
+                        documentSection = `
+                            <div class="mt-2 p-2 border border-gray-300 rounded-md bg-gray-100 text-sm">
+                                <h4 class="font-bold mb-1">Файл: ${activity.documentName}</h4>
+                                <button class="file-link expand-file" data-id="${activity.id}">Развернуть</button>
+                                <pre class="whitespace-pre-wrap mt-2 hidden" id="file-content-${activity.id}">${activity.documentContent}</pre>
+                            </div>`;
+                    } else {
+                        documentSection = `<span class="text-xs text-gray-500 mt-1">Нет документа</span>`;
+                    }
                     
                     activityItem.innerHTML = `
                         <div>
@@ -418,7 +425,7 @@
                             ${subject}
                             <p class="text-sm text-gray-600">Время: ${time}</p>
                             ${notes}
-                            ${documentContent}
+                            ${documentSection}
                         </div>
                         <button class="delete-btn" data-id="${activity.id}">Удалить</button>
                     `;
@@ -431,7 +438,7 @@
         window.onload = async () => {
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
-                    showModal("Ошибка: Firebase не инициализирован. Пожалуйста, предоставьте конфигурацию Firebase.");
+                    showAuthMessage("Ошибка: Firebase не инициализирован. Пожалуйста, предоставьте конфигурацию Firebase.");
                     console.error("Firebase config is empty.");
                     return;
                 }
@@ -445,7 +452,7 @@
                 mainAppSection.classList.add('hidden');
             } catch (error) {
                 console.error("Error initializing Firebase:", error);
-                showModal("Произошла ошибка при инициализации приложения. Пожалуйста, попробуйте снова.");
+                showAuthMessage("Произошла ошибка при инициализации приложения. Пожалуйста, попробуйте снова.");
             }
         };
 
@@ -459,9 +466,8 @@
                 mainAppSection.classList.remove('hidden');
                 setupRealtimeListener();
                 renderCalendar(currentDate);
-                showModal("Вход выполнен успешно!");
             } else {
-                showModal("Неверный логин или пароль.");
+                showAuthMessage("Неверный логин или пароль.");
             }
         });
 
@@ -485,7 +491,6 @@
             authSection.classList.remove('hidden');
             emailInput.value = '';
             passwordInput.value = '';
-            showModal("Вы вышли из системы.");
         });
 
         // Setup real-time listener for the activities collection
@@ -504,7 +509,7 @@
                 }
             }, (error) => {
                 console.error("Error fetching activities:", error);
-                showModal("Ошибка при загрузке занятий. Попробуйте обновить страницу.");
+                showFormMessage("Ошибка при загрузке занятий. Попробуйте обновить страницу.");
             });
         };
 
@@ -524,7 +529,7 @@
             calendarSection.classList.remove('hidden');
             clearForm();
         });
-
+        
         // Event listener for adding/updating a new activity
         addActivityBtn.addEventListener('click', async () => {
             const date = selectedDateInput.value;
@@ -536,7 +541,7 @@
             const editingId = editingDocIdInput.value;
 
             if (!discipline) {
-                showModal("Пожалуйста, введите название дисциплины.");
+                showFormMessage("Пожалуйста, введите название дисциплины.");
                 return;
             }
 
@@ -557,11 +562,12 @@
                         };
                         if (editingId) {
                             await updateDoc(doc(db, activitiesCollectionRef.path, editingId), activityData);
-                            showModal("Занятие успешно обновлено!");
                         } else {
                             await addDoc(activitiesCollectionRef, activityData);
-                            showModal("Занятие успешно добавлено!");
                         }
+                        // После успешного добавления, переходим к календарю
+                        activityFormSection.classList.add('hidden');
+                        calendarSection.classList.remove('hidden');
                         clearForm();
                     };
                     reader.readAsText(file); // Reads the file as text
@@ -577,16 +583,17 @@
                     };
                     if (editingId) {
                         await updateDoc(doc(db, activitiesCollectionRef.path, editingId), activityData);
-                        showModal("Занятие успешно обновлено!");
                     } else {
                         await addDoc(activitiesCollectionRef, activityData);
-                        showModal("Занятие успешно добавлено!");
                     }
+                    // После успешного добавления, переходим к календарю
+                    activityFormSection.classList.add('hidden');
+                    calendarSection.classList.remove('hidden');
                     clearForm();
                 }
             } catch (e) {
                 console.error("Error adding/updating document: ", e);
-                showModal("Произошла ошибка при добавлении/обновлении занятия. " + e.message);
+                showFormMessage("Произошла ошибка при добавлении/обновлении занятия. " + e.message);
             }
         });
 
@@ -606,19 +613,38 @@
                     formTitle.textContent = 'Редактировать запись';
                 }
             }
+            // Handle expand/collapse file content
+            if (e.target.classList.contains('expand-file')) {
+                const docId = e.target.getAttribute('data-id');
+                const fileContentPre = document.getElementById(`file-content-${docId}`);
+                if (fileContentPre.classList.contains('hidden')) {
+                    fileContentPre.classList.remove('hidden');
+                    e.target.textContent = 'Свернуть';
+                } else {
+                    fileContentPre.classList.add('hidden');
+                    e.target.textContent = 'Развернуть';
+                }
+            }
 
             // Handle delete click
             if (e.target.classList.contains('delete-btn')) {
                 const docId = e.target.getAttribute('data-id');
                 try {
                     await deleteDoc(doc(db, activitiesCollectionRef.path, docId));
-                    showModal("Занятие успешно удалено!");
                 } catch (e) {
                     console.error("Error removing document:", e);
-                    showModal("Произошла ошибка при удалении занятия.");
+                    showFormMessage("Произошла ошибка при удалении занятия.");
                 }
             }
         });
+        
+        // Handle return to calendar button click
+        returnToCalendarBtn.addEventListener('click', () => {
+            activityFormSection.classList.add('hidden');
+            calendarSection.classList.remove('hidden');
+            clearForm();
+        });
+
     </script>
 </body>
 </html>
