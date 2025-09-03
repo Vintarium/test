@@ -126,6 +126,9 @@
             font-weight: 500;
             text-align: center;
         }
+        pre.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -188,11 +191,11 @@
 
         <!-- Activity Form Section -->
         <div id="activityFormSection" class="mt-8 hidden">
-            <div class="flex flex-row-reverse justify-between items-center">
-                <button id="returnToCalendarBtn" class="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+            <div class="flex flex-col sm:flex-row-reverse sm:justify-between items-center space-y-4 sm:space-y-0 mb-4">
+                <button id="returnToCalendarBtn" class="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 w-full sm:w-auto">
                     Вернуться к календарю
                 </button>
-                <h2 class="text-2xl font-bold mb-4 text-center" id="formTitle">Добавить запись</h2>
+                <h2 class="text-2xl font-bold text-center" id="formTitle">Добавить запись</h2>
             </div>
             <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
                 <input type="hidden" id="selectedDateInput">
@@ -300,10 +303,13 @@
         const showAuthMessage = (message, isError = true) => {
             authMessage.textContent = message;
             authMessage.classList.remove('hidden');
-            authMessage.classList.remove(isError ? 'bg-green-100' : 'bg-red-100');
-            authMessage.classList.remove(isError ? 'text-green-700' : 'text-red-700');
-            authMessage.classList.add(isError ? 'bg-red-100' : 'bg-green-100');
-            authMessage.classList.add(isError ? 'text-red-700' : 'text-green-700');
+            if (isError) {
+                authMessage.classList.remove('bg-green-100', 'text-green-700');
+                authMessage.classList.add('bg-red-100', 'text-red-700');
+            } else {
+                authMessage.classList.remove('bg-red-100', 'text-red-700');
+                authMessage.classList.add('bg-green-100', 'text-green-700');
+            }
         };
 
         const clearAuthMessage = () => {
@@ -314,10 +320,13 @@
         const showFormMessage = (message, isError = true) => {
             formMessage.textContent = message;
             formMessage.classList.remove('hidden');
-            formMessage.classList.remove(isError ? 'bg-green-100' : 'bg-red-100');
-            formMessage.classList.remove(isError ? 'text-green-700' : 'text-red-700');
-            formMessage.classList.add(isError ? 'bg-red-100' : 'bg-green-100');
-            formMessage.classList.add(isError ? 'text-red-700' : 'text-green-700');
+            if (isError) {
+                formMessage.classList.remove('bg-green-100', 'text-green-700');
+                formMessage.classList.add('bg-red-100', 'text-red-700');
+            } else {
+                formMessage.classList.remove('bg-red-100', 'text-red-700');
+                formMessage.classList.add('bg-green-100', 'text-green-700');
+            }
         };
 
         const clearFormMessage = () => {
