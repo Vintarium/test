@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приложение для учета занятий</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        .input-group label {
+            font-weight: 500;
+        }
+        .input-group input, .input-group textarea, .input-group button {
+            border-radius: 0.5rem;
+        }
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        .activity-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-bottom: 1rem;
+        }
+        .delete-btn {
+            background-color: #ef4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        .delete-btn:hover {
+            background-color: #dc2626;
+        }
+        /* Стили для модального окна */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .file-link {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+        .file-link:hover {
+            color: #4338ca;
+        }
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Auth Section -->
+    <div id="authSection" class="auth-container">
+        <h2 id="authTitle" class="text-2xl font-bold mb-4">Вход</h2>
+        <div class="input-group">
+            <label for="email" class="block text-left text-sm font-medium text-gray-700">Email</label>
+            <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Введите ваш email">
+        </div>
+        <div class="input-group">
+            <label for="password" class="block text-left text-sm font-medium text-gray-700">Пароль</label>
+            <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Введите ваш пароль">
+        </div>
+        <button id="authBtn" class="w-full mt-4 flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Войти</button>
+        <p class="text-sm mt-4">Нет аккаунта? <a href="#" id="toggleAuthMode" class="text-indigo-600 hover:underline">Зарегистрироваться</a></p>
+    </div>
+
+    <!-- Email Verification Section -->
+    <div id="emailVerificationSection" class="auth-container hidden">
+        <h2 class="text-2xl font-bold mb-4">Подтвердите вашу почту</h2>
+        <p class="text-gray-600 mb-4">Мы отправили письмо для подтверждения на ваш адрес. Пожалуйста, проверьте почту и перейдите по ссылке.</p>
+        <button id="resendEmailBtn" class="w-full mt-4 flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Отправить письмо еще раз</button>
+        <p class="text-sm mt-4">Уже подтвердили? <a href="#" id="refreshPage" class="text-indigo-600 hover:underline">Обновите страницу</a></p>
+    </div>
+
+    <!-- Main App Section (hidden initially) -->
+    <div id="mainAppSection" class="container mx-auto p-6 bg-white shadow-xl rounded-lg hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Журнал занятий</h1>
+            <button id="signOutBtn" class="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">Выйти</button>
+        </div>
+        <p class="text-gray-600 text-center mb-6">Добавляйте свои ежедневные занятия, время и прикрепляйте документы.</p>
+
+        <!-- Форма для добавления нового занятия -->
+        <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="input-group">
+                <label for="activityDate" class="block text-sm font-medium text-gray-700">Дата</label>
+                <input type="date" id="activityDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div class="input-group">
+                <label for="activityName" class="block text-sm font-medium text-gray-700">Название занятия</label>
+                <input type="text" id="activityName" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Например: Урок английского">
+            </div>
+            <div class="input-group">
+                <label for="activitySubject" class="block text-sm font-medium text-gray-700">Тема занятия</label>
+                <input type="text" id="activitySubject" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Например: Грамматика, Разговорная речь">
+            </div>
+            <div class="input-group">
+                <label for="activityTime" class="block text-sm font-medium text-gray-700">Время</label>
+                <input type="time" id="activityTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div class="input-group">
+                <label for="activityNotes" class="block text-sm font-medium text-gray-700">Заметки</label>
+                <textarea id="activityNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Дополнительная информация..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="documentFile" class="block text-sm font-medium text-gray-700">Прикрепить документ</label>
+                <input type="file" id="documentFile" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
+            </div>
+            <button id="addActivityBtn" class="w-full mt-4 flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Добавить занятие</button>
+        </div>
+
+        <!-- Отображение списка занятий -->
+        <div id="activitiesList" class="space-y-4">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Мои занятия</h2>
+            <!-- Записи будут добавлены сюда с помощью JavaScript -->
+        </div>
+    </div>
+
+    <!-- Модальное окно для сообщений -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content text-center">
+            <span class="close-btn" onclick="document.getElementById('messageModal').style.display='none'">&times;</span>
+            <p id="modalMessage" class="text-gray-700"></p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Scripts -->
+    <script type="module">
+        // Import Firebase modules using a more recent version for better compatibility
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        // Global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase
+        let app;
+        let db;
+        let auth;
+        let storage;
+        let userId = null;
+        let activitiesCollectionRef;
+
+        // Auth UI Elements
+        const authSection = document.getElementById('authSection');
+        const authTitle = document.getElementById('authTitle');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const authBtn = document.getElementById('authBtn');
+        const toggleAuthMode = document.getElementById('toggleAuthMode');
+        let isLoginMode = true;
+
+        // Main App UI Elements
+        const mainAppSection = document.getElementById('mainAppSection');
+        const emailVerificationSection = document.getElementById('emailVerificationSection');
+        const resendEmailBtn = document.getElementById('resendEmailBtn');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const activityDateInput = document.getElementById('activityDate');
+        const activityNameInput = document.getElementById('activityName');
+        const activitySubjectInput = document.getElementById('activitySubject');
+        const activityTimeInput = document.getElementById('activityTime');
+        const activityNotesInput = document.getElementById('activityNotes');
+        const documentFileInput = document.getElementById('documentFile');
+        const addActivityBtn = document.getElementById('addActivityBtn');
+        const activitiesList = document.getElementById('activitiesList');
+        const messageModal = document.getElementById('messageModal');
+        const modalMessage = document.getElementById('modalMessage');
+
+        const showModal = (message) => {
+            modalMessage.textContent = message;
+            messageModal.style.display = 'block';
+        };
+
+        // Initialize Firebase on window load
+        window.onload = async () => {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    showModal("Ошибка: Firebase не инициализирован. Пожалуйста, предоставьте конфигурацию Firebase.");
+                    console.error("Firebase config is empty.");
+                    return;
+                }
+                
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                storage = getStorage(app);
+
+                // Listen for authentication state changes
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        if (user.emailVerified) {
+                            userId = user.uid;
+                            activitiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/activities`);
+                            authSection.classList.add('hidden');
+                            emailVerificationSection.classList.add('hidden');
+                            mainAppSection.classList.remove('hidden');
+                            setupRealtimeListener();
+                        } else {
+                            authSection.classList.add('hidden');
+                            mainAppSection.classList.add('hidden');
+                            emailVerificationSection.classList.remove('hidden');
+                        }
+                    } else {
+                        userId = null;
+                        authSection.classList.remove('hidden');
+                        emailVerificationSection.classList.add('hidden');
+                        mainAppSection.classList.add('hidden');
+                        activitiesList.innerHTML = '';
+                    }
+                });
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                }
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                showModal("Произошла ошибка при инициализации приложения. Пожалуйста, попробуйте снова.");
+            }
+        };
+
+        // Handle login/registration
+        authBtn.addEventListener('click', async () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                showModal("Пожалуйста, введите email и пароль.");
+                return;
+            }
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    // onAuthStateChanged will handle UI changes
+                    showModal("Вход выполнен успешно!");
+                } else {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await sendEmailVerification(userCredential.user);
+                    showModal("Регистрация успешна! Пожалуйста, проверьте вашу почту для подтверждения.");
+                    // onAuthStateChanged will handle UI changes
+                }
+            } catch (e) {
+                console.error("Auth error:", e);
+                // Provide more specific user-facing messages for common auth errors
+                let message = 'Произошла ошибка аутентификации.';
+                switch (e.code) {
+                    case 'auth/user-not-found':
+                        message = 'Пользователь с таким email не найден.';
+                        break;
+                    case 'auth/wrong-password':
+                        message = 'Неверный пароль.';
+                        break;
+                    case 'auth/email-already-in-use':
+                        message = 'Этот email уже используется.';
+                        break;
+                    case 'auth/invalid-email':
+                        message = 'Неверный формат email.';
+                        break;
+                    default:
+                        message = `Ошибка: ${e.message}`;
+                }
+                showModal(message);
+            }
+        });
+
+        // Toggle between login and registration mode
+        toggleAuthMode.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                authTitle.textContent = "Вход";
+                authBtn.textContent = "Войти";
+                toggleAuthMode.textContent = "Зарегистрироваться";
+            } else {
+                authTitle.textContent = "Регистрация";
+                authBtn.textContent = "Зарегистрироваться";
+                toggleAuthMode.textContent = "Войти";
+            }
+        });
+
+        // Handle sign out
+        signOutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                showModal("Вы вышли из системы.");
+            } catch (e) {
+                console.error("Sign out error:", e);
+                showModal("Ошибка при выходе из системы.");
+            }
+        });
+
+        // Resend email verification
+        resendEmailBtn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (user && user.email) {
+                try {
+                    await sendEmailVerification(user);
+                    showModal("Письмо для подтверждения отправлено. Пожалуйста, проверьте вашу почту.");
+                } catch (e) {
+                    console.error("Error resending email:", e);
+                    showModal("Ошибка при отправке письма. Попробуйте снова позже.");
+                }
+            } else {
+                showModal("Невозможно отправить письмо. Пользователь не аутентифицирован или не имеет email.");
+            }
+        });
+
+        // Setup real-time listener for the activities collection
+        const setupRealtimeListener = () => {
+            onSnapshot(activitiesCollectionRef, (snapshot) => {
+                const activities = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    activities.push({
+                        id: doc.id,
+                        ...data
+                    });
+                });
+                renderActivities(activities);
+            }, (error) => {
+                console.error("Error fetching activities:", error);
+                showModal("Ошибка при загрузке занятий. Попробуйте обновить страницу.");
+            });
+        };
+
+        // Render activities to the UI
+        const renderActivities = (activities) => {
+            activitiesList.innerHTML = ''; // Clear previous entries
+            if (activities.length === 0) {
+                activitiesList.innerHTML = '<p class="text-center text-gray-500">Пока нет записей. Добавьте первую!</p>';
+                return;
+            }
+            activities.forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+                
+                // Construct the content to display
+                const date = activity.date ? new Date(activity.date + 'T00:00:00').toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Нет даты';
+                const time = activity.time || 'Нет времени';
+                const subject = activity.subject ? `<p class="text-sm text-gray-600 mt-1">Тема: ${activity.subject}</p>` : '';
+                const notes = activity.notes ? `<p class="text-sm text-gray-600 mt-1">Заметки: ${activity.notes}</p>` : '';
+                const documentLink = activity.documentUrl ? 
+                    `<a href="${activity.documentUrl}" target="_blank" class="file-link text-xs mt-1">Скачать документ: ${activity.documentName}</a>` :
+                    `<span class="text-xs text-gray-500 mt-1">Нет документа</span>`;
+                
+                activityItem.innerHTML = `
+                    <div>
+                        <p class="font-medium text-lg text-gray-900">${activity.name}</p>
+                        ${subject}
+                        <p class="text-sm text-gray-600">${date}, ${time}</p>
+                        ${notes}
+                        ${documentLink}
+                    </div>
+                    <button class="delete-btn" data-id="${activity.id}" data-file-path="${activity.documentPath || ''}">Удалить</button>
+                `;
+                activitiesList.appendChild(activityItem);
+            });
+        };
+
+        // Event listener for adding a new activity
+        addActivityBtn.addEventListener('click', async () => {
+            // Check if user is authenticated before proceeding
+            if (!userId) {
+                showModal("Пожалуйста, подождите, пока приложение загрузится и авторизуется.");
+                return;
+            }
+
+            const date = activityDateInput.value;
+            const name = activityNameInput.value.trim();
+            const subject = activitySubjectInput.value.trim();
+            const time = activityTimeInput.value;
+            const notes = activityNotesInput.value.trim();
+            const file = documentFileInput.files[0];
+
+            if (!name || !date) {
+                showModal("Пожалуйста, введите название и дату занятия.");
+                return;
+            }
+
+            try {
+                let documentUrl = null;
+                let documentPath = null;
+
+                if (file) {
+                    const storageRef = ref(storage, `artifacts/${appId}/users/${userId}/documents/${crypto.randomUUID()}_${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    documentUrl = await getDownloadURL(storageRef);
+                    documentPath = storageRef.fullPath;
+                    showModal("Файл загружен. Добавляем запись...");
+                }
+
+                const activityData = {
+                    name: name,
+                    subject: subject || null,
+                    date: date,
+                    time: time || null,
+                    notes: notes || null,
+                    documentName: file ? file.name : null,
+                    documentUrl: documentUrl,
+                    documentPath: documentPath,
+                };
+                
+                await addDoc(activitiesCollectionRef, activityData);
+                showModal("Занятие успешно добавлено!");
+                
+                // Clear the form
+                activityDateInput.value = '';
+                activityNameInput.value = '';
+                activitySubjectInput.value = '';
+                activityTimeInput.value = '';
+                activityNotesInput.value = '';
+                documentFileInput.value = '';
+                
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showModal("Произошла ошибка при добавлении занятия.");
+            }
+        });
+
+        // Event listener for deleting an activity
+        activitiesList.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const docId = e.target.getAttribute('data-id');
+                const filePath = e.target.getAttribute('data-file-path');
+                try {
+                    // Delete file from Storage if it exists
+                    if (filePath) {
+                        const fileRef = ref(storage, filePath);
+                        await deleteObject(fileRef);
+                        console.log("File deleted from storage.");
+                    }
+
+                    // Delete document from Firestore
+                    await deleteDoc(doc(db, activitiesCollectionRef.path, docId));
+                    showModal("Занятие успешно удалено!");
+                } catch (e) {
+                    console.error("Error removing document:", e);
+                    showModal("Произошла ошибка при удалении занятия.");
+                }
+            }
+        });
+    </script>
+</body>
+</html>
