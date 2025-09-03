@@ -41,6 +41,7 @@
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             margin-bottom: 1rem;
+            cursor: pointer;
         }
         .delete-btn {
             background-color: #ef4444;
@@ -154,6 +155,7 @@
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
+    <!-- Auth Section -->
     <div id="authSection" class="auth-container">
         <h2 id="authTitle" class="text-2xl font-bold mb-4">Вход</h2>
         <div class="input-group">
@@ -168,19 +170,22 @@
         <p class="text-sm mt-4"><a href="#" id="forgotPasswordLink" class="text-indigo-600 hover:underline">Забыли логин или пароль?</a></p>
     </div>
     
+    <!-- Password Reset Section -->
     <div id="passwordResetSection" class="auth-container hidden">
         <h2 class="text-2xl font-bold mb-4">Напоминание</h2>
         <p class="text-gray-600 mb-4">Для входа используйте логин и пароль: <span class="font-bold">admin</span>.</p>
         <p class="text-sm mt-4"><a href="#" id="backToLoginLink" class="text-indigo-600 hover:underline">Вернуться ко входу</a></p>
     </div>
 
+    <!-- Main App Section (hidden initially) -->
     <div id="mainAppSection" class="container mx-auto p-6 bg-white shadow-xl rounded-lg hidden">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
             <h1 class="text-3xl font-bold text-gray-800">Журнал занятий</h1>
             <button id="signOutBtn" class="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">Выйти</button>
         </div>
         <p class="text-gray-600 text-center mb-6">Добавляйте свои ежедневные занятия, время и прикрепляйте документы.</p>
 
+        <!-- Calendar Section -->
         <div id="calendarSection">
             <div class="calendar-header">
                 <button id="prevMonthBtn" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none">
@@ -201,13 +206,16 @@
                 <div class="day-label">Вс</div>
             </div>
             <div id="calendarDays" class="calendar-grid">
-                </div>
+                <!-- Days will be dynamically added here -->
+            </div>
         </div>
 
+        <!-- Activity Form Section -->
         <div id="activityFormSection" class="mt-8 hidden">
-            <h2 class="text-2xl font-bold mb-4 text-center">Добавить запись</h2>
+            <h2 class="text-2xl font-bold mb-4 text-center" id="formTitle">Добавить запись</h2>
             <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
                 <input type="hidden" id="selectedDateInput">
+                <input type="hidden" id="editingDocId">
                 <div class="input-group">
                     <label for="activityTime" class="block text-sm font-medium text-gray-700">Время</label>
                     <input type="time" id="activityTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -225,21 +233,23 @@
                     <textarea id="activityNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Дополнительная информация..."></textarea>
                 </div>
                 <div class="input-group">
-                    <label for="documentFile" class="block text-sm font-medium text-gray-700">Прикрепить документ</label>
-                    <input type="file" id="documentFile" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
+                    <label for="documentFile" class="block text-sm font-medium text-gray-700">Прикрепить документ (только .txt)</label>
+                    <input type="file" id="documentFile" accept=".txt" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
                 </div>
-                <div class="flex space-x-4 mt-4">
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-4">
                     <button id="addActivityBtn" class="flex-1 justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Добавить запись</button>
                     <button id="cancelFormBtn" class="flex-1 justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">Отмена</button>
                 </div>
             </div>
             
+            <!-- Отображение списка занятий для выбранного дня -->
             <div id="activitiesList" class="space-y-4">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">Записи за <span id="selectedDateDisplay"></span></h2>
             </div>
         </div>
     </div>
 
+    <!-- Модальное окно для сообщений -->
     <div id="messageModal" class="modal">
         <div class="modal-content text-center">
             <span class="close-btn" onclick="document.getElementById('messageModal').style.display='none'">&times;</span>
@@ -247,29 +257,29 @@
         </div>
     </div>
 
+    <!-- Firebase SDK Scripts -->
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        import { getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyD0LIA_mXpWey1I_LklTH_7nNuNB68aLC8",
-            authDomain: "teacherapp-a53c0.firebaseapp.com",
-            projectId: "teacherapp-a53c0",
-            storageBucket: "teacherapp-a53c0.firebasestorage.app",
-            messagingSenderId: "1034294911735",
-            appId: "1:1034294911735:web:f19ba8d9bdc840d50b69f2",
-            measurementId: "G-60VZ69LS7G"
+          apiKey: "AIzaSyDqZQWrwnMrRRFin1X5RD87W3lkU8SZFmc",
+          authDomain: "testapp-dbf60.firebaseapp.com",
+          databaseURL: "https://testapp-dbf60-default-rtdb.firebaseio.com",
+          projectId: "testapp-dbf60",
+          storageBucket: "testapp-dbf60.firebasestorage.app",
+          messagingSenderId: "387287061720",
+          appId: "1:387287061720:web:5e189308c302ad4a44f3ad"
         };
+        const appId = firebaseConfig.appId;
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        const userId = 'admin_user_id';
-        const activitiesCollectionRef = collection(db, `users/${userId}/activities`);
+        let app;
+        let db;
+        let userId = 'admin_user_id';
+        let activitiesCollectionRef;
 
         // Auth UI Elements
         const authSection = document.getElementById('authSection');
@@ -291,6 +301,9 @@
         const nextMonthBtn = document.getElementById('nextMonthBtn');
         const selectedDateInput = document.getElementById('selectedDateInput');
         const selectedDateDisplay = document.getElementById('selectedDateDisplay');
+        const formTitle = document.getElementById('formTitle');
+        const editingDocIdInput = document.getElementById('editingDocId');
+
         const activityTimeInput = document.getElementById('activityTime');
         const activityDisciplineInput = document.getElementById('activityDiscipline');
         const activitySubjectInput = document.getElementById('activitySubject');
@@ -310,6 +323,17 @@
         const showModal = (message) => {
             modalMessage.textContent = message;
             messageModal.style.display = 'block';
+        };
+        
+        const clearForm = () => {
+            activityTimeInput.value = '';
+            activityDisciplineInput.value = '';
+            activitySubjectInput.value = '';
+            activityNotesInput.value = '';
+            documentFileInput.value = '';
+            editingDocIdInput.value = '';
+            addActivityBtn.textContent = 'Добавить запись';
+            formTitle.textContent = 'Добавить запись';
         };
 
         const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
@@ -359,6 +383,7 @@
                     showActivitiesForDate(formattedDate);
                     calendarSection.classList.add('hidden');
                     activityFormSection.classList.remove('hidden');
+                    clearForm();
                 });
                 
                 calendarDaysContainer.appendChild(dayElement);
@@ -375,12 +400,16 @@
                 activitiesForDay.forEach(activity => {
                     const activityItem = document.createElement('div');
                     activityItem.className = 'activity-item';
+                    activityItem.setAttribute('data-id', activity.id);
                     
                     const time = activity.time || 'Нет времени';
                     const subject = activity.subject ? `<p class="text-sm text-gray-600 mt-1">Тема: ${activity.subject}</p>` : '';
                     const notes = activity.notes ? `<p class="text-sm text-gray-600 mt-1">Заметка: ${activity.notes}</p>` : '';
-                    const documentLink = activity.documentUrl ? 
-                        `<a href="${activity.documentUrl}" target="_blank" class="file-link text-xs mt-1">Скачать документ: ${activity.documentName}</a>` :
+                    const documentContent = activity.documentContent ? 
+                        `<div class="mt-2 p-2 border border-gray-300 rounded-md bg-gray-100 text-sm">
+                            <h4 class="font-bold mb-1">Файл: ${activity.documentName}</h4>
+                            <pre class="whitespace-pre-wrap">${activity.documentContent}</pre>
+                        </div>` :
                         `<span class="text-xs text-gray-500 mt-1">Нет документа</span>`;
                     
                     activityItem.innerHTML = `
@@ -389,12 +418,34 @@
                             ${subject}
                             <p class="text-sm text-gray-600">Время: ${time}</p>
                             ${notes}
-                            ${documentLink}
+                            ${documentContent}
                         </div>
-                        <button class="delete-btn" data-id="${activity.id}" data-file-path="${activity.documentPath || ''}">Удалить</button>
+                        <button class="delete-btn" data-id="${activity.id}">Удалить</button>
                     `;
                     activitiesList.appendChild(activityItem);
                 });
+            }
+        };
+
+        // Initialize Firebase on window load
+        window.onload = async () => {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    showModal("Ошибка: Firebase не инициализирован. Пожалуйста, предоставьте конфигурацию Firebase.");
+                    console.error("Firebase config is empty.");
+                    return;
+                }
+                
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+
+                activitiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/activities`);
+
+                authSection.classList.remove('hidden');
+                mainAppSection.classList.add('hidden');
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                showModal("Произошла ошибка при инициализации приложения. Пожалуйста, попробуйте снова.");
             }
         };
 
@@ -471,13 +522,10 @@
         cancelFormBtn.addEventListener('click', () => {
             activityFormSection.classList.add('hidden');
             calendarSection.classList.remove('hidden');
-            if (selectedDayElement) {
-                selectedDayElement.classList.remove('selected');
-                selectedDayElement = null;
-            }
+            clearForm();
         });
 
-        // Event listener for adding a new activity
+        // Event listener for adding/updating a new activity
         addActivityBtn.addEventListener('click', async () => {
             const date = selectedDateInput.value;
             const discipline = activityDisciplineInput.value.trim();
@@ -485,6 +533,7 @@
             const time = activityTimeInput.value;
             const notes = activityNotesInput.value.trim();
             const file = documentFileInput.files[0];
+            const editingId = editingDocIdInput.value;
 
             if (!discipline) {
                 showModal("Пожалуйста, введите название дисциплины.");
@@ -492,61 +541,76 @@
             }
 
             try {
-                let documentUrl = null;
-                let documentPath = null;
-
+                let documentContent = null;
                 if (file) {
-                    const storageRef = ref(storage, `users/${userId}/documents/${crypto.randomUUID()}_${file.name}`);
-                    await uploadBytes(storageRef, file);
-                    documentUrl = await getDownloadURL(storageRef);
-                    documentPath = storageRef.fullPath;
-                    showModal("Файл загружен. Добавляем запись...");
+                    const reader = new FileReader();
+                    reader.onload = async (event) => {
+                        documentContent = event.target.result;
+                        const activityData = {
+                            discipline: discipline,
+                            subject: subject || null,
+                            date: date,
+                            time: time || null,
+                            notes: notes || null,
+                            documentName: file.name,
+                            documentContent: documentContent
+                        };
+                        if (editingId) {
+                            await updateDoc(doc(db, activitiesCollectionRef.path, editingId), activityData);
+                            showModal("Занятие успешно обновлено!");
+                        } else {
+                            await addDoc(activitiesCollectionRef, activityData);
+                            showModal("Занятие успешно добавлено!");
+                        }
+                        clearForm();
+                    };
+                    reader.readAsText(file); // Reads the file as text
+                } else {
+                    const activityData = {
+                        discipline: discipline,
+                        subject: subject || null,
+                        date: date,
+                        time: time || null,
+                        notes: notes || null,
+                        documentName: null,
+                        documentContent: null
+                    };
+                    if (editingId) {
+                        await updateDoc(doc(db, activitiesCollectionRef.path, editingId), activityData);
+                        showModal("Занятие успешно обновлено!");
+                    } else {
+                        await addDoc(activitiesCollectionRef, activityData);
+                        showModal("Занятие успешно добавлено!");
+                    }
+                    clearForm();
                 }
-
-                const activityData = {
-                    discipline: discipline,
-                    subject: subject || null,
-                    date: date,
-                    time: time || null,
-                    notes: notes || null,
-                    documentName: file ? file.name : null,
-                    documentUrl: documentUrl,
-                    documentPath: documentPath,
-                };
-                
-                await addDoc(activitiesCollectionRef, activityData);
-                showModal("Занятие успешно добавлено!");
-                
-                // Clear the form and return to calendar view
-                activityTimeInput.value = '';
-                activityDisciplineInput.value = '';
-                activitySubjectInput.value = '';
-                activityNotesInput.value = '';
-                documentFileInput.value = '';
-
-                activityFormSection.classList.add('hidden');
-                calendarSection.classList.remove('hidden');
-
             } catch (e) {
-                console.error("Error adding document or uploading file: ", e);
-                showModal("Произошла ошибка при добавлении занятия. " + e.message);
+                console.error("Error adding/updating document: ", e);
+                showModal("Произошла ошибка при добавлении/обновлении занятия. " + e.message);
             }
         });
 
-        // Event listener for deleting an activity
+        // Event listener for editing and deleting an activity
         activitiesList.addEventListener('click', async (e) => {
+            // Handle edit click
+            if (e.target.closest('.activity-item') && !e.target.classList.contains('delete-btn')) {
+                const docId = e.target.closest('.activity-item').getAttribute('data-id');
+                const activity = allActivities.find(a => a.id === docId);
+                if (activity) {
+                    editingDocIdInput.value = activity.id;
+                    activityTimeInput.value = activity.time || '';
+                    activityDisciplineInput.value = activity.discipline || '';
+                    activitySubjectInput.value = activity.subject || '';
+                    activityNotesInput.value = activity.notes || '';
+                    addActivityBtn.textContent = 'Сохранить изменения';
+                    formTitle.textContent = 'Редактировать запись';
+                }
+            }
+
+            // Handle delete click
             if (e.target.classList.contains('delete-btn')) {
                 const docId = e.target.getAttribute('data-id');
-                const filePath = e.target.getAttribute('data-file-path');
                 try {
-                    // Delete file from Storage if it exists
-                    if (filePath) {
-                        const fileRef = ref(storage, filePath);
-                        await deleteObject(fileRef);
-                        console.log("File deleted from storage.");
-                    }
-
-                    // Delete document from Firestore
                     await deleteDoc(doc(db, activitiesCollectionRef.path, docId));
                     showModal("Занятие успешно удалено!");
                 } catch (e) {
