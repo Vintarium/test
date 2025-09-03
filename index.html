@@ -51,7 +51,6 @@
         .delete-btn:hover {
             background-color: #dc2626;
         }
-        /* Стили для модального окна */
         .modal {
             display: none;
             position: fixed;
@@ -101,34 +100,80 @@
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             text-align: center;
         }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .day {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            transition: background-color 0.2s ease;
+        }
+        .day:hover {
+            background-color: #e5e7eb;
+        }
+        .day.selected {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: bold;
+        }
+        .day.other-month {
+            color: #9ca3af;
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+        .day-label {
+            font-weight: bold;
+            color: #4b5563;
+        }
+        .day-info {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        .day.has-activity {
+            background-color: #d1d5db;
+        }
+        .day.has-activity.selected {
+            background-color: #3f35c5;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <!-- Auth Section -->
     <div id="authSection" class="auth-container">
         <h2 id="authTitle" class="text-2xl font-bold mb-4">Вход</h2>
         <div class="input-group">
-            <label for="email" class="block text-left text-sm font-medium text-gray-700">Email</label>
-            <input type="email" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Введите ваш email">
+            <label for="email" class="block text-left text-sm font-medium text-gray-700">Логин</label>
+            <input type="text" id="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Введите ваш логин">
         </div>
         <div class="input-group">
             <label for="password" class="block text-left text-sm font-medium text-gray-700">Пароль</label>
             <input type="password" id="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Введите ваш пароль">
         </div>
         <button id="authBtn" class="w-full mt-4 flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Войти</button>
-        <p class="text-sm mt-4">Нет аккаунта? <a href="#" id="toggleAuthMode" class="text-indigo-600 hover:underline">Зарегистрироваться</a></p>
+        <p class="text-sm mt-4"><a href="#" id="forgotPasswordLink" class="text-indigo-600 hover:underline">Забыли логин или пароль?</a></p>
+    </div>
+    
+    <div id="passwordResetSection" class="auth-container hidden">
+        <h2 class="text-2xl font-bold mb-4">Напоминание</h2>
+        <p class="text-gray-600 mb-4">Для входа используйте логин и пароль: <span class="font-bold">admin</span>.</p>
+        <p class="text-sm mt-4"><a href="#" id="backToLoginLink" class="text-indigo-600 hover:underline">Вернуться ко входу</a></p>
     </div>
 
-    <!-- Email Verification Section -->
-    <div id="emailVerificationSection" class="auth-container hidden">
-        <h2 class="text-2xl font-bold mb-4">Подтвердите вашу почту</h2>
-        <p class="text-gray-600 mb-4">Мы отправили письмо для подтверждения на ваш адрес. Пожалуйста, проверьте почту и перейдите по ссылке.</p>
-        <button id="resendEmailBtn" class="w-full mt-4 flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Отправить письмо еще раз</button>
-        <p class="text-sm mt-4">Уже подтвердили? <a href="#" id="refreshPage" class="text-indigo-600 hover:underline">Обновите страницу</a></p>
-    </div>
-
-    <!-- Main App Section (hidden initially) -->
     <div id="mainAppSection" class="container mx-auto p-6 bg-white shadow-xl rounded-lg hidden">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">Журнал занятий</h1>
@@ -136,43 +181,65 @@
         </div>
         <p class="text-gray-600 text-center mb-6">Добавляйте свои ежедневные занятия, время и прикрепляйте документы.</p>
 
-        <!-- Форма для добавления нового занятия -->
-        <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <div class="input-group">
-                <label for="activityDate" class="block text-sm font-medium text-gray-700">Дата</label>
-                <input type="date" id="activityDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        <div id="calendarSection">
+            <div class="calendar-header">
+                <button id="prevMonthBtn" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <span id="currentMonthYear"></span>
+                <button id="nextMonthBtn" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
             </div>
-            <div class="input-group">
-                <label for="activityName" class="block text-sm font-medium text-gray-700">Название занятия</label>
-                <input type="text" id="activityName" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Например: Урок английского">
+            <div class="calendar-grid mb-6">
+                <div class="day-label">Пн</div>
+                <div class="day-label">Вт</div>
+                <div class="day-label">Ср</div>
+                <div class="day-label">Чт</div>
+                <div class="day-label">Пт</div>
+                <div class="day-label">Сб</div>
+                <div class="day-label">Вс</div>
             </div>
-            <div class="input-group">
-                <label for="activitySubject" class="block text-sm font-medium text-gray-700">Тема занятия</label>
-                <input type="text" id="activitySubject" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Например: Грамматика, Разговорная речь">
-            </div>
-            <div class="input-group">
-                <label for="activityTime" class="block text-sm font-medium text-gray-700">Время</label>
-                <input type="time" id="activityTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            </div>
-            <div class="input-group">
-                <label for="activityNotes" class="block text-sm font-medium text-gray-700">Заметки</label>
-                <textarea id="activityNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Дополнительная информация..."></textarea>
-            </div>
-            <div class="input-group">
-                <label for="documentFile" class="block text-sm font-medium text-gray-700">Прикрепить документ</label>
-                <input type="file" id="documentFile" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
-            </div>
-            <button id="addActivityBtn" class="w-full mt-4 flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Добавить занятие</button>
+            <div id="calendarDays" class="calendar-grid">
+                </div>
         </div>
 
-        <!-- Отображение списка занятий -->
-        <div id="activitiesList" class="space-y-4">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Мои занятия</h2>
-            <!-- Записи будут добавлены сюда с помощью JavaScript -->
+        <div id="activityFormSection" class="mt-8 hidden">
+            <h2 class="text-2xl font-bold mb-4 text-center">Добавить запись</h2>
+            <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <input type="hidden" id="selectedDateInput">
+                <div class="input-group">
+                    <label for="activityTime" class="block text-sm font-medium text-gray-700">Время</label>
+                    <input type="time" id="activityTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div class="input-group">
+                    <label for="activityDiscipline" class="block text-sm font-medium text-gray-700">Дисциплина</label>
+                    <input type="text" id="activityDiscipline" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Например: Математика">
+                </div>
+                <div class="input-group">
+                    <label for="activitySubject" class="block text-sm font-medium text-gray-700">Тема занятия</label>
+                    <input type="text" id="activitySubject" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Например: Производные">
+                </div>
+                <div class="input-group">
+                    <label for="activityNotes" class="block text-sm font-medium text-gray-700">Заметка</label>
+                    <textarea id="activityNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Дополнительная информация..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="documentFile" class="block text-sm font-medium text-gray-700">Прикрепить документ</label>
+                    <input type="file" id="documentFile" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
+                </div>
+                <div class="flex space-x-4 mt-4">
+                    <button id="addActivityBtn" class="flex-1 justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Добавить запись</button>
+                    <button id="cancelFormBtn" class="flex-1 justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">Отмена</button>
+                </div>
+            </div>
+            
+            <div id="activitiesList" class="space-y-4">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Записи за <span id="selectedDateDisplay"></span></h2>
+            </div>
         </div>
     </div>
 
-    <!-- Модальное окно для сообщений -->
     <div id="messageModal" class="modal">
         <div class="modal-content text-center">
             <span class="close-btn" onclick="document.getElementById('messageModal').style.display='none'">&times;</span>
@@ -180,260 +247,247 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Scripts -->
     <script type="module">
-        // Import Firebase modules using a more recent version for better compatibility
+        // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-        // Global variables provided by the environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD0LIA_mXpWey1I_LklTH_7nNuNB68aLC8",
+            authDomain: "teacherapp-a53c0.firebaseapp.com",
+            projectId: "teacherapp-a53c0",
+            storageBucket: "teacherapp-a53c0.firebasestorage.app",
+            messagingSenderId: "1034294911735",
+            appId: "1:1034294911735:web:f19ba8d9bdc840d50b69f2",
+            measurementId: "G-60VZ69LS7G"
+        };
 
         // Initialize Firebase
-        let app;
-        let db;
-        let auth;
-        let storage;
-        let userId = null;
-        let activitiesCollectionRef;
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const userId = 'admin_user_id';
+        const activitiesCollectionRef = collection(db, `users/${userId}/activities`);
 
         // Auth UI Elements
         const authSection = document.getElementById('authSection');
-        const authTitle = document.getElementById('authTitle');
+        const passwordResetSection = document.getElementById('passwordResetSection');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
         const authBtn = document.getElementById('authBtn');
-        const toggleAuthMode = document.getElementById('toggleAuthMode');
-        let isLoginMode = true;
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+        const backToLoginLink = document.getElementById('backToLoginLink');
 
         // Main App UI Elements
         const mainAppSection = document.getElementById('mainAppSection');
-        const emailVerificationSection = document.getElementById('emailVerificationSection');
-        const resendEmailBtn = document.getElementById('resendEmailBtn');
         const signOutBtn = document.getElementById('signOutBtn');
-        const activityDateInput = document.getElementById('activityDate');
-        const activityNameInput = document.getElementById('activityName');
-        const activitySubjectInput = document.getElementById('activitySubject');
+        const calendarSection = document.getElementById('calendarSection');
+        const activityFormSection = document.getElementById('activityFormSection');
+        const calendarDaysContainer = document.getElementById('calendarDays');
+        const currentMonthYear = document.getElementById('currentMonthYear');
+        const prevMonthBtn = document.getElementById('prevMonthBtn');
+        const nextMonthBtn = document.getElementById('nextMonthBtn');
+        const selectedDateInput = document.getElementById('selectedDateInput');
+        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
         const activityTimeInput = document.getElementById('activityTime');
+        const activityDisciplineInput = document.getElementById('activityDiscipline');
+        const activitySubjectInput = document.getElementById('activitySubject');
         const activityNotesInput = document.getElementById('activityNotes');
         const documentFileInput = document.getElementById('documentFile');
         const addActivityBtn = document.getElementById('addActivityBtn');
+        const cancelFormBtn = document.getElementById('cancelFormBtn');
         const activitiesList = document.getElementById('activitiesList');
         const messageModal = document.getElementById('messageModal');
         const modalMessage = document.getElementById('modalMessage');
+
+        // Calendar state
+        let currentDate = new Date();
+        let allActivities = [];
+        let selectedDayElement = null;
 
         const showModal = (message) => {
             modalMessage.textContent = message;
             messageModal.style.display = 'block';
         };
 
-        // Initialize Firebase on window load
-        window.onload = async () => {
-            try {
-                if (Object.keys(firebaseConfig).length === 0) {
-                    showModal("Ошибка: Firebase не инициализирован. Пожалуйста, предоставьте конфигурацию Firebase.");
-                    console.error("Firebase config is empty.");
-                    return;
-                }
+        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+
+        // Function to render the calendar
+        const renderCalendar = (date) => {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            currentMonthYear.textContent = `${monthNames[month]} ${year}`;
+            calendarDaysContainer.innerHTML = '';
+
+            const dayOfWeekOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; // Adjusting for Monday as the first day of the week
+
+            for (let i = 0; i < dayOfWeekOffset; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.classList.add('day', 'other-month');
+                calendarDaysContainer.appendChild(emptyDay);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.classList.add('day');
+                dayElement.textContent = day;
                 
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                storage = getStorage(app);
-
-                // Listen for authentication state changes
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        if (user.emailVerified) {
-                            userId = user.uid;
-                            activitiesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/activities`);
-                            authSection.classList.add('hidden');
-                            emailVerificationSection.classList.add('hidden');
-                            mainAppSection.classList.remove('hidden');
-                            setupRealtimeListener();
-                        } else {
-                            authSection.classList.add('hidden');
-                            mainAppSection.classList.add('hidden');
-                            emailVerificationSection.classList.remove('hidden');
-                        }
-                    } else {
-                        userId = null;
-                        authSection.classList.remove('hidden');
-                        emailVerificationSection.classList.add('hidden');
-                        mainAppSection.classList.add('hidden');
-                        activitiesList.innerHTML = '';
-                    }
-                });
-
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
+                const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                dayElement.setAttribute('data-date', formattedDate);
+                
+                const activitiesForDay = allActivities.filter(activity => activity.date === formattedDate);
+                if (activitiesForDay.length > 0) {
+                    dayElement.classList.add('has-activity');
+                    dayElement.innerHTML += `<div class="day-info">${activitiesForDay.length} запись</div>`;
                 }
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-                showModal("Произошла ошибка при инициализации приложения. Пожалуйста, попробуйте снова.");
+
+                dayElement.addEventListener('click', () => {
+                    if (selectedDayElement) {
+                        selectedDayElement.classList.remove('selected');
+                    }
+                    selectedDayElement = dayElement;
+                    dayElement.classList.add('selected');
+
+                    selectedDateInput.value = formattedDate;
+                    selectedDateDisplay.textContent = new Date(formattedDate + 'T00:00:00').toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                    showActivitiesForDate(formattedDate);
+                    calendarSection.classList.add('hidden');
+                    activityFormSection.classList.remove('hidden');
+                });
+                
+                calendarDaysContainer.appendChild(dayElement);
+            }
+        };
+        
+        // Filter and display activities for a specific date
+        const showActivitiesForDate = (date) => {
+            const activitiesForDay = allActivities.filter(activity => activity.date === date);
+            activitiesList.innerHTML = '';
+            if (activitiesForDay.length === 0) {
+                activitiesList.innerHTML = '<p class="text-center text-gray-500">Записей на эту дату нет. Добавьте первую!</p>';
+            } else {
+                activitiesForDay.forEach(activity => {
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'activity-item';
+                    
+                    const time = activity.time || 'Нет времени';
+                    const subject = activity.subject ? `<p class="text-sm text-gray-600 mt-1">Тема: ${activity.subject}</p>` : '';
+                    const notes = activity.notes ? `<p class="text-sm text-gray-600 mt-1">Заметка: ${activity.notes}</p>` : '';
+                    const documentLink = activity.documentUrl ? 
+                        `<a href="${activity.documentUrl}" target="_blank" class="file-link text-xs mt-1">Скачать документ: ${activity.documentName}</a>` :
+                        `<span class="text-xs text-gray-500 mt-1">Нет документа</span>`;
+                    
+                    activityItem.innerHTML = `
+                        <div>
+                            <p class="font-medium text-lg text-gray-900">${activity.discipline}</p>
+                            ${subject}
+                            <p class="text-sm text-gray-600">Время: ${time}</p>
+                            ${notes}
+                            ${documentLink}
+                        </div>
+                        <button class="delete-btn" data-id="${activity.id}" data-file-path="${activity.documentPath || ''}">Удалить</button>
+                    `;
+                    activitiesList.appendChild(activityItem);
+                });
             }
         };
 
-        // Handle login/registration
-        authBtn.addEventListener('click', async () => {
-            const email = emailInput.value;
-            const password = passwordInput.value;
-
-            if (!email || !password) {
-                showModal("Пожалуйста, введите email и пароль.");
-                return;
-            }
-
-            try {
-                if (isLoginMode) {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    // onAuthStateChanged will handle UI changes
-                    showModal("Вход выполнен успешно!");
-                } else {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    await sendEmailVerification(userCredential.user);
-                    showModal("Регистрация успешна! Пожалуйста, проверьте вашу почту для подтверждения.");
-                    // onAuthStateChanged will handle UI changes
-                }
-            } catch (e) {
-                console.error("Auth error:", e);
-                // Provide more specific user-facing messages for common auth errors
-                let message = 'Произошла ошибка аутентификации.';
-                switch (e.code) {
-                    case 'auth/user-not-found':
-                        message = 'Пользователь с таким email не найден.';
-                        break;
-                    case 'auth/wrong-password':
-                        message = 'Неверный пароль.';
-                        break;
-                    case 'auth/email-already-in-use':
-                        message = 'Этот email уже используется.';
-                        break;
-                    case 'auth/invalid-email':
-                        message = 'Неверный формат email.';
-                        break;
-                    default:
-                        message = `Ошибка: ${e.message}`;
-                }
-                showModal(message);
+        // Handle hardcoded login
+        authBtn.addEventListener('click', () => {
+            const login = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (login === 'admin' && password === 'admin') {
+                authSection.classList.add('hidden');
+                mainAppSection.classList.remove('hidden');
+                setupRealtimeListener();
+                renderCalendar(currentDate);
+                showModal("Вход выполнен успешно!");
+            } else {
+                showModal("Неверный логин или пароль.");
             }
         });
 
-        // Toggle between login and registration mode
-        toggleAuthMode.addEventListener('click', (e) => {
+        // Toggle to password reset section (now a hint)
+        forgotPasswordLink.addEventListener('click', (e) => {
             e.preventDefault();
-            isLoginMode = !isLoginMode;
-            if (isLoginMode) {
-                authTitle.textContent = "Вход";
-                authBtn.textContent = "Войти";
-                toggleAuthMode.textContent = "Зарегистрироваться";
-            } else {
-                authTitle.textContent = "Регистрация";
-                authBtn.textContent = "Зарегистрироваться";
-                toggleAuthMode.textContent = "Войти";
-            }
+            authSection.classList.add('hidden');
+            passwordResetSection.classList.remove('hidden');
         });
 
-        // Handle sign out
-        signOutBtn.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                showModal("Вы вышли из системы.");
-            } catch (e) {
-                console.error("Sign out error:", e);
-                showModal("Ошибка при выходе из системы.");
-            }
+        // Toggle back to login from password reset
+        backToLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            passwordResetSection.classList.add('hidden');
+            authSection.classList.remove('hidden');
         });
 
-        // Resend email verification
-        resendEmailBtn.addEventListener('click', async () => {
-            const user = auth.currentUser;
-            if (user && user.email) {
-                try {
-                    await sendEmailVerification(user);
-                    showModal("Письмо для подтверждения отправлено. Пожалуйста, проверьте вашу почту.");
-                } catch (e) {
-                    console.error("Error resending email:", e);
-                    showModal("Ошибка при отправке письма. Попробуйте снова позже.");
-                }
-            } else {
-                showModal("Невозможно отправить письмо. Пользователь не аутентифицирован или не имеет email.");
-            }
+        // Handle simple sign out
+        signOutBtn.addEventListener('click', () => {
+            mainAppSection.classList.add('hidden');
+            authSection.classList.remove('hidden');
+            emailInput.value = '';
+            passwordInput.value = '';
+            showModal("Вы вышли из системы.");
         });
 
         // Setup real-time listener for the activities collection
         const setupRealtimeListener = () => {
             onSnapshot(activitiesCollectionRef, (snapshot) => {
-                const activities = [];
+                allActivities = [];
                 snapshot.forEach(doc => {
-                    const data = doc.data();
-                    activities.push({
+                    allActivities.push({
                         id: doc.id,
-                        ...data
+                        ...doc.data()
                     });
                 });
-                renderActivities(activities);
+                renderCalendar(currentDate);
+                if (!activityFormSection.classList.contains('hidden')) {
+                    showActivitiesForDate(selectedDateInput.value);
+                }
             }, (error) => {
                 console.error("Error fetching activities:", error);
                 showModal("Ошибка при загрузке занятий. Попробуйте обновить страницу.");
             });
         };
 
-        // Render activities to the UI
-        const renderActivities = (activities) => {
-            activitiesList.innerHTML = ''; // Clear previous entries
-            if (activities.length === 0) {
-                activitiesList.innerHTML = '<p class="text-center text-gray-500">Пока нет записей. Добавьте первую!</p>';
-                return;
+        // Calendar navigation
+        prevMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar(currentDate);
+        });
+        nextMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar(currentDate);
+        });
+        
+        // Handle form cancellation
+        cancelFormBtn.addEventListener('click', () => {
+            activityFormSection.classList.add('hidden');
+            calendarSection.classList.remove('hidden');
+            if (selectedDayElement) {
+                selectedDayElement.classList.remove('selected');
+                selectedDayElement = null;
             }
-            activities.forEach(activity => {
-                const activityItem = document.createElement('div');
-                activityItem.className = 'activity-item';
-                
-                // Construct the content to display
-                const date = activity.date ? new Date(activity.date + 'T00:00:00').toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Нет даты';
-                const time = activity.time || 'Нет времени';
-                const subject = activity.subject ? `<p class="text-sm text-gray-600 mt-1">Тема: ${activity.subject}</p>` : '';
-                const notes = activity.notes ? `<p class="text-sm text-gray-600 mt-1">Заметки: ${activity.notes}</p>` : '';
-                const documentLink = activity.documentUrl ? 
-                    `<a href="${activity.documentUrl}" target="_blank" class="file-link text-xs mt-1">Скачать документ: ${activity.documentName}</a>` :
-                    `<span class="text-xs text-gray-500 mt-1">Нет документа</span>`;
-                
-                activityItem.innerHTML = `
-                    <div>
-                        <p class="font-medium text-lg text-gray-900">${activity.name}</p>
-                        ${subject}
-                        <p class="text-sm text-gray-600">${date}, ${time}</p>
-                        ${notes}
-                        ${documentLink}
-                    </div>
-                    <button class="delete-btn" data-id="${activity.id}" data-file-path="${activity.documentPath || ''}">Удалить</button>
-                `;
-                activitiesList.appendChild(activityItem);
-            });
-        };
+        });
 
         // Event listener for adding a new activity
         addActivityBtn.addEventListener('click', async () => {
-            // Check if user is authenticated before proceeding
-            if (!userId) {
-                showModal("Пожалуйста, подождите, пока приложение загрузится и авторизуется.");
-                return;
-            }
-
-            const date = activityDateInput.value;
-            const name = activityNameInput.value.trim();
+            const date = selectedDateInput.value;
+            const discipline = activityDisciplineInput.value.trim();
             const subject = activitySubjectInput.value.trim();
             const time = activityTimeInput.value;
             const notes = activityNotesInput.value.trim();
             const file = documentFileInput.files[0];
 
-            if (!name || !date) {
-                showModal("Пожалуйста, введите название и дату занятия.");
+            if (!discipline) {
+                showModal("Пожалуйста, введите название дисциплины.");
                 return;
             }
 
@@ -442,7 +496,7 @@
                 let documentPath = null;
 
                 if (file) {
-                    const storageRef = ref(storage, `artifacts/${appId}/users/${userId}/documents/${crypto.randomUUID()}_${file.name}`);
+                    const storageRef = ref(storage, `users/${userId}/documents/${crypto.randomUUID()}_${file.name}`);
                     await uploadBytes(storageRef, file);
                     documentUrl = await getDownloadURL(storageRef);
                     documentPath = storageRef.fullPath;
@@ -450,7 +504,7 @@
                 }
 
                 const activityData = {
-                    name: name,
+                    discipline: discipline,
                     subject: subject || null,
                     date: date,
                     time: time || null,
@@ -463,17 +517,19 @@
                 await addDoc(activitiesCollectionRef, activityData);
                 showModal("Занятие успешно добавлено!");
                 
-                // Clear the form
-                activityDateInput.value = '';
-                activityNameInput.value = '';
-                activitySubjectInput.value = '';
+                // Clear the form and return to calendar view
                 activityTimeInput.value = '';
+                activityDisciplineInput.value = '';
+                activitySubjectInput.value = '';
                 activityNotesInput.value = '';
                 documentFileInput.value = '';
-                
+
+                activityFormSection.classList.add('hidden');
+                calendarSection.classList.remove('hidden');
+
             } catch (e) {
-                console.error("Error adding document: ", e);
-                showModal("Произошла ошибка при добавлении занятия.");
+                console.error("Error adding document or uploading file: ", e);
+                showModal("Произошла ошибка при добавлении занятия. " + e.message);
             }
         });
 
