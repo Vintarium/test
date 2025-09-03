@@ -423,6 +423,7 @@
                                 <h4 class="font-bold mb-1">Файл: ${activity.documentName}</h4>
                                 <button class="file-link expand-file" data-id="${activity.id}">Развернуть</button>
                                 <pre class="whitespace-pre-wrap mt-2 hidden" id="file-content-${activity.id}">${activity.documentContent}</pre>
+                                <button class="file-link download-file" data-id="${activity.id}" data-filename="${activity.documentName}">Скачать</button>
                             </div>`;
                     } else {
                         documentSection = `<span class="text-xs text-gray-500 mt-1">Нет документа</span>`;
@@ -635,6 +636,23 @@
                 }
             }
 
+            // Handle download click
+            if (e.target.classList.contains('download-file')) {
+                const docId = e.target.getAttribute('data-id');
+                const activity = allActivities.find(a => a.id === docId);
+                if (activity && activity.documentContent) {
+                    const blob = new Blob([activity.documentContent], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = activity.documentName || 'document.txt';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            }
+
             // Handle delete click
             if (e.target.classList.contains('delete-btn')) {
                 const docId = e.target.getAttribute('data-id');
@@ -648,7 +666,7 @@
         });
         
         // Handle return to calendar button click
-        returnToCalendarBtn.addEventListener('click', () => {
+        cancelFormBtn.addEventListener('click', () => {
             activityFormSection.classList.add('hidden');
             calendarSection.classList.remove('hidden');
             clearForm();
